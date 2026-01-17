@@ -3,178 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Surprise & Share</title>
+    <title>Ultimate Surprise 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
     <style>
-        :root { --pink: #ff4d94; --gold: #ffd700; --neon: #ff00ff; --bg-dark: #0f0113; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; transition: background 1.5s ease; color: white; font-family: 'Poppins', sans-serif; overflow: hidden; }
-        .bg-starry { background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%); }
-        .bg-sunset { background: linear-gradient(135deg, #2d0b3d, #e91e63, #ff9800); background-size: 400% 400%; animation: sunsetAnim 10s infinite; }
-        @keyframes sunsetAnim { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        .bg-hearts { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
-        .floating-heart { position: absolute; color: rgba(255, 77, 148, 0.4); animation: float 6s linear infinite; }
-        @keyframes float { 0% { transform: translateY(110vh) scale(0); opacity: 1; } 100% { transform: translateY(-10vh) scale(1.5); opacity: 0; } }
+        :root { --main-bg: #1a0026; --accent: #ff4d94; --text-color: #ffffff; --font-style: 'Poppins', sans-serif; }
+        
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: var(--main-bg); color: var(--text-color); font-family: var(--font-style); overflow: hidden; transition: all 1s ease; touch-action: none; }
+        
+        /* Auto Themes */
+        .theme-propose { --main-bg: #2b0000; --accent: #ff0000; --font-style: 'Dancing Script', cursive; }
+        .theme-anniversary { --main-bg: #1e003d; --accent: #e0b0ff; }
+        .theme-festival { --main-bg: #261a00; --accent: #ffd700; }
+        .theme-date { --main-bg: #1a0a00; --accent: #ff9f43; --font-style: 'Dancing Script', cursive; }
+
+        #fireworks-canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 999; }
         .screen { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         .active { display: flex; animation: fadeIn 0.8s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .heart-btn { font-size: 110px; cursor: pointer; filter: drop-shadow(0 0 30px var(--pink)); margin: 20px 0; transition: 0.3s; }
-        .ticket-glow { background: rgba(255, 215, 0, 0.1); border: 2px solid var(--gold); border-radius: 15px; padding: 20px; box-shadow: 0 0 25px rgba(255, 215, 0, 0.5); }
-        .premium-card { background: rgba(15, 1, 19, 0.85); border: 2px solid var(--neon); border-radius: 25px; width: 95%; max-width: 380px; padding: 40px 20px; box-shadow: 0 0 40px var(--neon); }
-        .wish-title { font-family: 'Dancing Script', cursive; font-size: 2.5em; color: var(--pink); margin-bottom: 10px; }
-        .btn-main { background: var(--pink); color: white; border: none; padding: 15px 40px; border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 5px 15px rgba(255,77,148,0.4); }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: #111; padding: 25px; border-radius: 20px; width: 90%; max-width: 360px; border: 1px solid var(--neon); text-align: center; }
-        .modal-content input, .modal-content select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; background: #222; color: white; box-sizing: border-box; }
-        .share-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .share-btn { padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 14px; }
-        .wa { background: #25D366; } .ig { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); } .fb { background: #1877F2; } .sc { background: #FFFC00; color: black; }
-        .footer { margin-top: 30px; font-size: 12px; font-weight: bold; letter-spacing: 2px; color: var(--gold); }
+
+        .heart { font-size: 80px; color: var(--accent); cursor: pointer; filter: drop-shadow(0 0 20px var(--accent)); transition: 0.3s; }
+        .countdown-box { margin: 15px 0; font-size: 1.2rem; font-weight: bold; color: var(--accent); letter-spacing: 2px; }
+
+        .card-stack { position: relative; width: 250px; height: 320px; margin: 20px auto; }
+        .distraction-card, .gift-card { position: absolute; width: 100%; height: 100%; border-radius: 15px; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.5s; cursor: pointer; }
+        .gift-card { background: var(--accent); color: white; flex-direction: column; }
+        .fly-away { transform: translateX(200%) rotate(45deg); opacity: 0; pointer-events: none; }
+
+        .golden-ticket { background: linear-gradient(45deg, #ffd700, #ffae00); color: #442c00; padding: 25px; border-radius: 15px; border: 4px dashed #442c00; }
+        .claim-btn { background: #442c00; color: #ffd700; border: none; padding: 12px 25px; margin-top: 15px; font-weight: bold; cursor: pointer; border-radius: 50px; width: 100%; }
+
+        .card-wrapper { perspective: 1000px; width: 280px; height: 350px; cursor: pointer; }
+        .birthday-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: 1.2s; }
+        .card-open { transform: rotateX(-140deg); }
+        .card-front, .card-inside { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px; border: 3px solid var(--accent); background: white; color: #333; }
+        .card-inside { transform: rotateX(180deg); padding: 20px; box-sizing: border-box; background: #fff0f3; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1001; justify-content: center; align-items: center; overflow-y: auto; }
+        .modal-content { background: #1a1a1a; padding: 20px; border-radius: 20px; width: 90%; max-width: 380px; border: 1px solid var(--accent); }
+        input, select { width: 90%; padding: 10px; margin: 8px 0; border-radius: 8px; border: none; background: #333; color: white; }
+        .small-btn { font-size: 11px; color: #888; background: none; border: 1px solid #333; padding: 8px 20px; border-radius: 20px; cursor: pointer; margin-top: 30px; }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-sunset">
+<body onclick="createFirework(event)">
 
-    <div class="bg-hearts" id="heart-container"></div>
+    <canvas id="fireworks-canvas"></canvas>
 
     <div id="screen1" class="screen active">
-        <h1 style="font-family: 'Dancing Script', cursive; font-size: 3em;">Hey <span class="display-name"></span>!</h1>
-        <p>Unbox your special surprise...</p>
-        <div class="heart-btn" id="heart">❤️</div>
-        <p style="font-size: 0.8em; letter-spacing: 3px; color: var(--pink);">HOLD TO UNLOCK</p>
+        <h2 style="font-size: 2.2rem;">Hey <span class="u-name"></span>!</h2>
+        <div class="heart-container" id="heartBox" style="position:relative; width:100px; height:100px; margin:20px auto;">
+            <div id="ring" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:50%; border:4px solid transparent; border-top-color:var(--accent); display:none; animation:spin 1s linear infinite;"></div>
+            <div class="heart" id="mainHeart">❤️</div>
+        </div>
+        <p>Tap & Hold the heart tightly...</p>
     </div>
 
     <div id="screen2" class="screen">
-        <h2 style="color: var(--gold);">Golden Ticket Found! 🎫</h2>
-        <div class="ticket-glow">
-            <h3 style="margin: 0;">SPECIAL PASS</h3>
-            <p style="font-size: 1.2em;">For: <span class="display-name"></span></p>
+        <h2>Clear the distractions</h2>
+        <div class="card-stack">
+            <div class="gift-card" onclick="nextScreen(2, 3)">🎁<p>Unbox Now</p></div>
+            <div class="distraction-card" style="background:#ff4757; color:white;" onclick="swipe(this)">Work Stress</div>
+            <div class="distraction-card" style="background:#2f3542; color:white;" onclick="swipe(this)">Bad Vibes</div>
+            <div class="distraction-card" style="background:#ffa502; color:white;" onclick="swipe(this)">Tensions</div>
         </div>
-        <button class="btn-main" onclick="claimTicket()">REVEAL NOW ✨</button>
     </div>
 
     <div id="screen3" class="screen">
-        <div class="premium-card">
-            <div class="wish-title" id="final-wish-title"></div>
-            <p id="final-message" style="line-height: 1.6; font-size: 1.1em;"></p>
-            <div id="invite-box" style="display:none; margin: 15px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-                <p>📅 <b>Date:</b> <span id="view-date"></span></p>
-                <p>📍 <b>Venue:</b> <span id="view-venue"></span></p>
-            </div>
-            <div style="margin-top: 20px; font-size: 0.9em; opacity: 0.8;">From: <b id="sender-name" style="color: var(--gold);"></b></div>
+        <div class="golden-ticket">
+            <h3 id="ticket-title">SPECIAL ACCESS</h3>
+            <div class="countdown-box" id="timer-display">Ready for Surprise?</div>
+            <p>For: <span class="u-name"></span></p>
+            <button onclick="claim()" class="claim-btn">REVEAL SURPRISE ✨</button>
         </div>
-        <button onclick="toggleModal('createModal', true)" style="background:none; border:1px solid #444; color:#777; padding:8px 20px; border-radius:20px; margin-top:25px; cursor:pointer;">✨ Create Your Wish</button>
-        <div class="footer">DEVELOPER BY AADARSH ❤️</div>
     </div>
 
-    <div id="createModal" class="modal">
+    <div id="screen5" class="screen">
+        <div class="card-wrapper" onclick="openCard()">
+            <div class="birthday-card" id="bCard">
+                <div class="card-front"><h3>For You 💌</h3><p>Tap to Read</p></div>
+                <div class="card-inside">
+                    <p id="displayMsg" style="font-size:1.2rem; line-height:1.5;"></p>
+                </div>
+            </div>
+        </div>
+        <button class="small-btn" onclick="toggleModal(true)">Create Your Own Surprise ✍️</button>
+    </div>
+
+    <div id="modal" class="modal">
         <div class="modal-content">
-            <h3 style="color: var(--neon);">Wish Creator</h3>
-            <input type="text" id="in-to" placeholder="Receiver's Name">
-            <select id="in-type" onchange="checkType(this.value)">
-                <option value="birthday">Birthday Wish 🎂</option>
-                <option value="proposal">Love Proposal ❤️</option>
+            <h3>Creator Studio</h3>
+            <select id="inCat">
+                <option value="birthday">Birthday 🎂</option>
+                <option value="propose">Propose 🌹</option>
                 <option value="anniversary">Anniversary 💍</option>
-                <option value="invitation">Party Invitation 🌹</option>
-                <option value="sexual">Private Invitation 🔥</option>
+                <option value="festival">Festival ✨</option>
+                <option value="date">Special Date ☕</option>
             </select>
-            <div id="invite-fields" style="display:none;">
-                <input type="text" id="in-date" placeholder="Date & Time">
-                <input type="text" id="in-venue" placeholder="Venue / Jagah">
-            </div>
-            <input type="text" id="in-from" placeholder="Your Name">
-            <button class="btn-main" onclick="generateAndShare()" style="width:100%">Generate & Share</button>
-            <button onclick="toggleModal('createModal', false)" style="background:none; border:none; color:#888; margin-top:10px;">Close</button>
-        </div>
-    </div>
-
-    <div id="shareSheet" class="modal">
-        <div class="modal-content" style="border-color: var(--gold);">
-            <h3 style="color: var(--gold); margin: 0;">Share Surprise via 📲</h3>
-            <div class="share-options">
-                <button class="share-btn wa" onclick="directShare('wa')">WhatsApp</button>
-                <button class="share-btn ig" onclick="directShare('ig')">Instagram</button>
-                <button class="share-btn fb" onclick="directShare('fb')">Facebook</button>
-                <button class="share-btn sc" onclick="directShare('sc')">Snapchat</button>
-            </div>
-            <button onclick="toggleModal('shareSheet', false)" style="background:none; border:none; color:#888; margin-top:10px;">Cancel</button>
+            <input type="text" id="inName" placeholder="Recipient's Name">
+            <input type="datetime-local" id="inTime">
+            <button class="claim-btn" onclick="gen()">Generate & Copy Link</button>
+            <div id="qrcode" style="margin-top:10px;"></div>
+            <button class="small-btn" onclick="toggleModal(false)">Close</button>
         </div>
     </div>
 
     <script>
-        // ADSTERRA SMARTLINK
-        const SMARTLINK = "https://www.effectivegatecpm.com/zm365eyn?key=bf11a0360a79a30106cb46c22fd7d880";
-        
-        let generatedUrl = "";
+        const MONETAG = "https://otieu.com/4/10478983";
         const params = new URLSearchParams(window.location.search);
-        const to = params.get('to') || "Friend", from = params.get('from') || "Aadarsh", type = params.get('type') || "birthday";
+        
+        const cat = params.get('c') || 'birthday';
+        const name = params.get('n') || 'Special One';
+        const eventTime = params.get('t') || '';
 
-        document.body.className = ['proposal', 'anniversary', 'sexual'].includes(type) ? "bg-starry" : "bg-sunset";
-        document.querySelectorAll('.display-name').forEach(el => el.innerText = to);
-        document.getElementById('sender-name').innerText = from;
+        // Apply Theme
+        if(['propose', 'festival', 'anniversary', 'date'].includes(cat)) {
+            document.body.classList.add('theme-' + cat);
+        }
 
-        const wishData = {
-            birthday: { title: "Happy Birthday! 🎂", msg: `Wishing you a day as glowing as this screen, ${to}! 🥳` },
-            proposal: { title: "Be Mine? ❤️", msg: `${to}, my world is better with you. Will you be mine forever? 🥰` },
-            anniversary: { title: "Happy Anniversary! 💍", msg: `May our love keep shining brighter than the stars, ${to}. ✨` },
-            invitation: { title: "You're Invited! 🌹", msg: `Hey ${to}, save the date for my special party!` },
-            sexual: { title: "A Private Secret... 🔥", msg: `Hey ${to}, waiting for some quality time with you... 😉` }
+        document.querySelectorAll('.u-name').forEach(e => e.innerText = name);
+        
+        const wishes = {
+            birthday: `Wishing you a day filled with endless joy and magic, ${name}! 🎂`,
+            propose: `Every heartbeat of mine whispers your name. Will you be mine forever? 🌹`,
+            anniversary: `To the love that keeps growing every single day. Happy Anniversary! 💍`,
+            festival: `Wishing you a glowing celebration filled with happiness! ✨`,
+            date: `I've been waiting for this... Let's make this date unforgettable. ☕`,
+            invite: `Can't wait to celebrate with you! See you soon.`
+        };
+        document.getElementById('displayMsg').innerText = wishes[cat];
+
+        // Countdown
+        if(eventTime) {
+            setInterval(() => {
+                const distance = new Date(eventTime).getTime() - new Date().getTime();
+                if (distance > 0) {
+                    const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    document.getElementById('timer-display').innerText = `${d}d ${h}h ${m}m to go!`;
+                }
+            }, 1000);
+        }
+
+        // Functions
+        function vibrate(ms) { if(navigator.vibrate) navigator.vibrate(ms); }
+        function swipe(e) { vibrate(40); e.classList.add('fly-away'); }
+        function openCard() { vibrate(60); document.getElementById('bCard').classList.toggle('card-open'); }
+        function nextScreen(h, s) { document.getElementById('screen'+h).classList.remove('active'); document.getElementById('screen'+s).classList.add('active'); confetti(); }
+        
+        // Monetag Earning Logic
+        function claim() { 
+            vibrate(100); 
+            window.open(MONETAG, '_blank'); 
+            setTimeout(() => { nextScreen(3, 5); }, 500); 
+        }
+
+        function toggleModal(s) { document.getElementById('modal').style.display = s?'flex':'none'; }
+
+        // Heart Hold Logic
+        let hTimer, hInt;
+        const hBox = document.getElementById('heartBox');
+        hBox.onmousedown = hBox.ontouchstart = (e) => {
+            e.preventDefault(); document.getElementById('ring').style.display='block';
+            hInt = setInterval(()=>vibrate(50), 200);
+            hTimer = setTimeout(()=> { clearInterval(hInt); nextScreen(1,2); }, 2000);
+        };
+        hBox.onmouseup = hBox.ontouchend = () => {
+            document.getElementById('ring').style.display='none';
+            clearInterval(hInt); clearTimeout(hTimer);
         };
 
-        document.getElementById('final-wish-title').innerText = wishData[type].title;
-        document.getElementById('final-message').innerText = wishData[type].msg;
-        if(params.get('date')) {
-            document.getElementById('invite-box').style.display = 'block';
-            document.getElementById('view-date').innerText = params.get('date');
-            document.getElementById('view-venue').innerText = params.get('venue');
+        // Generator
+        function gen() {
+            const n = document.getElementById('inName').value || 'Friend';
+            const c = document.getElementById('inCat').value;
+            const t = document.getElementById('inTime').value;
+            const url = `${window.location.origin}${window.location.pathname}?n=${encodeURIComponent(n)}&c=${c}&t=${encodeURIComponent(t)}`;
+            
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById('qrcode'), { text: url, width: 120, height: 120 });
+            navigator.clipboard.writeText(url);
+            vibrate([50, 50, 50]);
+            alert("Surprise Link Copied!");
         }
 
-        let holdTimer;
-        document.getElementById('heart').addEventListener('mousedown', () => holdTimer = setTimeout(() => nextScreen(2), 1200));
-        document.getElementById('heart').addEventListener('touchstart', () => holdTimer = setTimeout(() => nextScreen(2), 1200));
-        document.getElementById('heart').addEventListener('mouseup', () => clearTimeout(holdTimer));
-        document.getElementById('heart').addEventListener('touchend', () => clearTimeout(holdTimer));
-
-        function nextScreen(n) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen'+n).classList.add('active');
+        // Fireworks
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let pArr = [];
+        function createFirework(e) {
+            vibrate(20);
+            const x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            for(let i=0; i<15; i++) pArr.push({ x, y, dx:(Math.random()-0.5)*10, dy:(Math.random()-0.5)*10, l:60, c:`hsl(${Math.random()*360},100%,50%)` });
         }
-
-        function claimTicket() {
-            window.open(SMARTLINK, '_blank'); // Open Ad Link
-            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-            setTimeout(() => nextScreen(3), 500);
+        function anim() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            pArr.forEach((p, i) => {
+                p.x += p.dx; p.y += p.dy; p.l--;
+                ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
+                if(p.l<=0) pArr.splice(i,1);
+            });
+            requestAnimationFrame(anim);
         }
-
-        function toggleModal(id, s) { document.getElementById(id).style.display = s ? 'flex' : 'none'; }
-        function checkType(v) { document.getElementById('invite-fields').style.display = (v === 'invitation' || v === 'sexual') ? 'block' : 'none'; }
-
-        function generateAndShare() {
-            const t = document.getElementById('in-to').value, f = document.getElementById('in-from').value, ty = document.getElementById('in-type').value;
-            if(t && f) {
-                window.open(SMARTLINK, '_blank'); // Open Ad Link on Generate
-                generatedUrl = `${window.location.origin}${window.location.pathname}?to=${encodeURIComponent(t)}&from=${encodeURIComponent(f)}&type=${ty}`;
-                if(document.getElementById('in-date').value) generatedUrl += `&date=${encodeURIComponent(document.getElementById('in-date').value)}&venue=${encodeURIComponent(document.getElementById('in-venue').value)}`;
-                toggleModal('createModal', false);
-                toggleModal('shareSheet', true);
-            } else { alert("Names please!"); }
-        }
-
-        function directShare(p) {
-            const txt = `✨ Surprise for ${document.getElementById('in-to').value}! Open it: `;
-            navigator.clipboard.writeText(generatedUrl);
-            let url = "";
-            if(p === 'wa') url = `https://wa.me/?text=${encodeURIComponent(txt + generatedUrl)}`;
-            else if(p === 'fb') url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(generatedUrl)}`;
-            else { alert("Link Copied! Wahan ja kar paste karein."); url = p === 'ig' ? "https://instagram.com" : "https://snapchat.com"; }
-            window.open(url, '_blank');
-        }
-
-        setInterval(() => {
-            const h = document.createElement('div'); h.classList.add('floating-heart'); h.innerHTML = '❤️';
-            h.style.left = Math.random()*100+'vw'; h.style.animationDuration = (Math.random()*3+4)+'s';
-            document.getElementById('heart-container').appendChild(h);
-            setTimeout(() => h.remove(), 6000);
-        }, 400);
+        anim();
     </script>
 </body>
 </html>
